@@ -1,10 +1,20 @@
+#requires -Version 5.1
+
 param(
     [int]$Days = 1
 )
 
 # Check for PC crashes, blue screens, freezes, and restarts
 # Usage: .\check-crashes.ps1 -Days 7
-# Run as Administrator for best results
+# Automatically elevates to Administrator
+
+# Self-elevation with execution policy bypass
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "Administrator privileges required. Elevating..." -ForegroundColor Yellow
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`" -Days $Days"
+    Start-Process PowerShell -Verb RunAs -ArgumentList $arguments
+    exit
+}
 
 $StartTime = (Get-Date).AddDays(-$Days)
 $ReportTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -55,48 +65,48 @@ function Add-UniqueResult {
 $BugChecks = Get-CrashEvents -Filter @{
     LogName = 'System'; ProviderName = 'Microsoft-Windows-WER-SystemErrorReporting'
     Id = 1001; StartTime = $StartTime
-} -Label "[1/8] Checking for Blue Screen errors (BugCheck)..."
+} -Label "[1/14] Checking for Blue Screen errors (BugCheck)..."
 foreach ($e in $BugChecks) { Add-UniqueResult $e "BLUE SCREEN (BugCheck)" }
 
 # 2. Kernel-Power Critical Events (Unexpected shutdown/restart)
 $KernelPower = Get-CrashEvents -Filter @{
     LogName = 'System'; ProviderName = 'Microsoft-Windows-Kernel-Power'
     Id = 41; StartTime = $StartTime
-} -Label "[2/8] Checking for unexpected shutdowns (Kernel-Power 41)..."
+} -Label "[2/14] Checking for unexpected shutdowns (Kernel-Power 41)..."
 foreach ($e in $KernelPower) { Add-UniqueResult $e "UNEXPECTED SHUTDOWN/RESTART" }
 
 # 3. Kernel-Power Watchdog Timeout (System freeze)
 $Watchdog = Get-CrashEvents -Filter @{
     LogName = 'System'; ProviderName = 'Microsoft-Windows-Kernel-Power'
     Id = 109; StartTime = $StartTime
-} -Label "[3/8] Checking for system freezes (Watchdog timeout 109)..."
+} -Label "[3/14] Checking for system freezes (Watchdog timeout 109)..."
 foreach ($e in $Watchdog) { Add-UniqueResult $e "SYSTEM FREEZE (Watchdog Timeout)" }
 
 # 4. Dirty shutdown events
 $DirtyShutdown = Get-CrashEvents -Filter @{
     LogName = 'System'; ProviderName = 'EventLog'
     Id = 6008; StartTime = $StartTime
-} -Label "[4/8] Checking for dirty shutdown events (EventLog 6008)..."
+} -Label "[4/14] Checking for dirty shutdown events (EventLog 6008)..."
 foreach ($e in $DirtyShutdown) { Add-UniqueResult $e "DIRTY SHUTDOWN (Improper shutdown)" }
 
 # 5. WHEA Hardware Errors
 $WheaErrors = Get-CrashEvents -Filter @{
     LogName = 'System'; ProviderName = 'Microsoft-Windows-WHEA-Logger'
     StartTime = $StartTime
-} -Label "[5/8] Checking for hardware errors (WHEA)..."
+} -Label "[5/14] Checking for hardware errors (WHEA)..."
 foreach ($e in $WheaErrors) { Add-UniqueResult $e "HARDWARE ERROR (WHEA)" }
 
 # 6. Display driver crashes / TDR (black screen)
 $DisplayCrashes = Get-CrashEvents -Filter @{
     LogName = 'System'; ProviderName = 'Display'
     Id = 4101; StartTime = $StartTime
-} -Label "[6/8] Checking for display driver crashes / black screen (TDR 4101)..."
+} -Label "[6/14] Checking for display driver crashes / black screen (TDR 4101)..."
 foreach ($e in $DisplayCrashes) { Add-UniqueResult $e "DISPLAY DRIVER CRASH (Black Screen/TDR)" }
 
 # 7. Application crashes and hangs
 $AppCrashes = Get-CrashEvents -Filter @{
     LogName = 'Application'; Id = 1000, 1002; StartTime = $StartTime
-} -Label "[7/8] Checking for application crashes (Event ID 1000/1002)..."
+} -Label "[7/14] Checking for application crashes (Event ID 1000/1002)..."
 foreach ($e in $AppCrashes) {
     $t = if ($e.Id -eq 1000) { "APPLICATION CRASH" } else { "APPLICATION HANG" }
     Add-UniqueResult $e $t
@@ -105,10 +115,51 @@ foreach ($e in $AppCrashes) {
 # 8. Critical system errors (Level=1), excluding already captured
 $CriticalErrors = Get-CrashEvents -Filter @{
     LogName = 'System'; Level = 1; StartTime = $StartTime
-} -Label "[8/8] Checking for other critical system errors..." -MaxEvents 50
+} -Label "[8/14] Checking for other critical system errors..." -MaxEvents 50
 foreach ($e in $CriticalErrors) { Add-UniqueResult $e "CRITICAL ERROR" }
 
-# 9. Check for minidump files
+# 9. Disk/Storage Errors
+$DiskErrors = Get-CrashEvents -Filter @{
+    LogName = 'System'; ProviderName = 'disk','atapi','ataport'
+    Id = 7,11,15,51,55; StartTime = $StartTime
+} -Label "[9/14] Checking for disk/storage errors..."
+foreach ($e in $DiskErrors) { Add-UniqueResult $e "DISK ERROR" }
+
+# 10. Memory/DIMM Errors
+$MemoryErrors = Get-CrashEvents -Filter @{
+    LogName = 'System'; ProviderName = 'Microsoft-Windows-Kernel-Memory'
+    Id = 19,20; StartTime = $StartTime
+} -Label "[10/14] Checking for memory errors..."
+foreach ($e in $MemoryErrors) { Add-UniqueResult $e "MEMORY ERROR" }
+
+# 11. Service Control Manager Failures
+$ServiceFailures = Get-CrashEvents -Filter @{
+    LogName = 'System'; ProviderName = 'Service Control Manager'
+    Id = 7031,7032,7034; StartTime = $StartTime
+} -Label "[11/14] Checking for critical service failures..."
+foreach ($e in $ServiceFailures) { Add-UniqueResult $e "SERVICE FAILURE" }
+
+# 12. System File Corruption (CBS)
+$CbsErrors = Get-CrashEvents -Filter @{
+    LogName = 'Application'; ProviderName = 'CBS','Microsoft-Windows-CAPI2'
+    Level = 1,2; StartTime = $StartTime
+} -Label "[12/14] Checking for system file corruption..."
+foreach ($e in $CbsErrors) { Add-UniqueResult $e "FILE CORRUPTION" }
+
+# 13. Driver Load Failures
+$DriverFailures = Get-CrashEvents -Filter @{
+    LogName = 'System'; Id = 219,1060; StartTime = $StartTime
+} -Label "[13/14] Checking for driver failures..."
+foreach ($e in $DriverFailures) { Add-UniqueResult $e "DRIVER FAILURE" }
+
+# 14. NTFS File System Errors
+$NtfsErrors = Get-CrashEvents -Filter @{
+    LogName = 'System'; ProviderName = 'Ntfs'
+    Id = 55,137; StartTime = $StartTime
+} -Label "[14/14] Checking for file system errors..."
+foreach ($e in $NtfsErrors) { Add-UniqueResult $e "FILE SYSTEM ERROR" }
+
+# 15. Check for minidump files
 Write-Host "`nChecking for recent minidump files..." -ForegroundColor Yellow
 $MiniDumpPath = "$env:SystemRoot\Minidump"
 $FullDumpPath = "$env:SystemRoot\MEMORY.DMP"
@@ -155,7 +206,13 @@ $Categories = @(
     @{ Label = "Hardware Errors";        Filter = '*HARDWARE*';      Severity = 'critical' },
     @{ Label = "Display Driver Crashes"; Filter = '*DISPLAY*';       Severity = 'warning'  },
     @{ Label = "Critical Errors";        Filter = 'CRITICAL ERROR';  Severity = 'critical' },
-    @{ Label = "Application Crashes";    Filter = '*APPLICATION*';   Severity = 'warning'  }
+    @{ Label = "Application Crashes";    Filter = '*APPLICATION*';   Severity = 'warning'  },
+    @{ Label = "Disk/Storage Errors";    Filter = '*DISK ERROR*';    Severity = 'critical' },
+    @{ Label = "Memory Errors";          Filter = '*MEMORY ERROR*';  Severity = 'critical' },
+    @{ Label = "Service Failures";       Filter = '*SERVICE FAILURE*'; Severity = 'warning' },
+    @{ Label = "File Corruption";        Filter = '*FILE CORRUPTION*'; Severity = 'critical' },
+    @{ Label = "Driver Failures";        Filter = '*DRIVER FAILURE*'; Severity = 'warning' },
+    @{ Label = "File System Errors";     Filter = '*FILE SYSTEM ERROR*'; Severity = 'critical' }
 )
 
 # ── Build AI-friendly plain text block ──
