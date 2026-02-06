@@ -1,7 +1,28 @@
-﻿<#
-    Get-LastLocalLogonDate.ps1
-    Gets and outputs last logon of local users to txt file
-    Author: Jake Kelley
+<#
+.SYNOPSIS
+    Retrieves and exports the last logon dates for all local user accounts.
+
+.DESCRIPTION
+    This script queries all local user accounts on the system and retrieves their
+    last logon timestamps. The results are formatted as a table and exported to
+    a text file for auditing or documentation purposes.
+    
+    The script automatically elevates to Administrator privileges if needed.
+
+.PARAMETER None
+    No parameters required. Output path is hardcoded in the script.
+
+.EXAMPLE
+    .\Get-LastLocalLogonDate.ps1
+    Exports last logon dates to C:\Admin\LastLocalLogonDate.txt
+
+.NOTES
+    Requires Administrator privileges (will auto-elevate if needed).
+    Output is saved to C:\Admin\LastLocalLogonDate.txt
+    Only queries local accounts, not domain accounts.
+
+.AUTHOR
+    Jake Kelley
 #>
 
 

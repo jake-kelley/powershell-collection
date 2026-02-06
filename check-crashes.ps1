@@ -1,3 +1,40 @@
+<#
+.SYNOPSIS
+    Analyzes Windows system for crashes, blue screens, freezes, and critical errors.
+
+.DESCRIPTION
+    This script scans Windows Event Logs for various crash-related events including BSODs,
+    unexpected shutdowns, system freezes, hardware errors, application crashes, and more.
+    It generates a comprehensive HTML report with system information, event summaries,
+    and an AI-friendly diagnostic summary that can be copied to clipboard.
+    
+    The script automatically elevates to Administrator if not already running with elevated privileges.
+    Results are displayed in Microsoft Edge browser.
+
+.PARAMETER Days
+    Number of days to look back in the event logs. Default is 1 day.
+
+.EXAMPLE
+    .\check-crashes.ps1
+    Checks for crashes in the past 1 day (default).
+
+.EXAMPLE
+    .\check-crashes.ps1 -Days 7
+    Checks for crashes in the past 7 days.
+
+.EXAMPLE
+    .\check-crashes.ps1 -Days 30
+    Checks for crashes in the past 30 days.
+
+.NOTES
+    Requires Windows PowerShell 5.1 or later.
+    Requires Administrator privileges (will auto-elevate if needed).
+    Output is saved to %TEMP% as an HTML file and opened in Microsoft Edge.
+
+.AUTHOR
+    Jake Kelley
+#>
+
 #requires -Version 5.1
 
 param(

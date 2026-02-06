@@ -1,8 +1,27 @@
 <#
-    1. Prompts for disk selection, DriveLetter, and SystemLabel
-    2. Cleans, partitions, formats disk with above parameters
+.SYNOPSIS
+    Initializes, partitions, and formats a new disk drive.
 
-    Note: Utilizes all space on disk and formats as NTFS
+.DESCRIPTION
+    This script automates the setup of a new disk by prompting for the disk number,
+    desired drive letter, and volume label. It then clears the disk, initializes it,
+    creates a new partition using the maximum available space, and formats it as NTFS.
+
+.PARAMETER None
+    All parameters are collected interactively via Read-Host prompts.
+
+.EXAMPLE
+    .\Partition-New-Disk.ps1
+    Interactively prompts for disk selection and formatting options.
+
+.NOTES
+    Run as Administrator (disk operations require elevated privileges).
+    This script will CLEAR ALL DATA on the selected disk.
+    Uses the maximum available space for the new partition.
+    Formats the partition as NTFS.
+
+.AUTHOR
+    Jake Kelley
 #>
 
 # List disks to console

@@ -1,5 +1,31 @@
 <#
-    Remove set list of Windows 10 built-in bloatware
+.SYNOPSIS
+    Removes pre-installed Windows 10 bloatware applications.
+
+.DESCRIPTION
+    This script removes a predefined list of built-in Windows 10 applications
+    that are commonly considered bloatware or unnecessary. It removes both the
+    installed AppX packages for the current user and the provisioned packages
+    that would be installed for new users.
+    
+    Applications removed include: 3D Builder, Bing apps, Solitaire, People,
+    Xbox apps, Zune apps, Get Started, Feedback Hub, Office Hub, and more.
+
+.PARAMETER None
+    No parameters required. The list of apps is defined within the script.
+
+.EXAMPLE
+    .\Remove-Bloatware.ps1
+    Removes all bloatware applications from the system.
+
+.NOTES
+    Run as Administrator for best results.
+    Some applications may require a restart to be fully removed.
+    Use caution when running on systems where some of these apps may be needed.
+    The script will display which packages were found and removed.
+
+.AUTHOR
+    Jake Kelley
 #>
 
 # List of apps to search for and remove

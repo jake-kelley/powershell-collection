@@ -1,14 +1,33 @@
-﻿<#
-    Install-MSU.ps1
-    Author: Jake Kelley
-    Date: 24 AUG 2021
-    Revision 1.0
-    
-    Accepts offline Microsoft patches for Win10/Server 2016/2019,
-    then applies SSUs followed by cumulative updates
+<#
+.SYNOPSIS
+    Installs offline Microsoft Windows updates (.msu files) in the correct order.
 
-    Patches must be placed in $UpdatePath, defined below, typically "C:\patches".
-    Patches must have "ssu" or "cumulative" in front of file name to be detected.
+.DESCRIPTION
+    This script automates the installation of standalone Windows updates (MSU files).
+    It detects and installs Servicing Stack Updates (SSU) first, followed by
+    Cumulative Updates, ensuring proper installation order.
+    
+    The script generates pre-patch and post-patch hotfix lists and compares them
+    to show which updates were successfully installed.
+
+.PARAMETER None
+    Configuration is done via the $UpdatePath variable in the script.
+
+.EXAMPLE
+    .\Install-MSU.ps1
+    Installs all MSU files from C:\patches following proper SSU-first order.
+
+.NOTES
+    Requires Administrator privileges (will auto-elevate if needed).
+    Update files must be placed in C:\patches (configurable via $UpdatePath).
+    SSU files must have "ssu" prefix in filename.
+    Cumulative updates must have "cumulative" prefix in filename.
+    Installation logs saved to C:\patches\wusa-log.evt
+
+.AUTHOR
+    Jake Kelley
+    Date: 24 AUG 2021
+    Revision: 1.0
 #>
 
 ##--------------------------------------------------------------------------

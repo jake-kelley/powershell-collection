@@ -1,6 +1,35 @@
-﻿<#
-    Disable-InactiveAccountsDOM.ps1
-    Last modified by Jake Kelley 11NOV2020
+<#
+.SYNOPSIS
+    Disables inactive domain user accounts based on last logon date.
+
+.DESCRIPTION
+    This script identifies and disables domain user accounts that have been inactive
+    for a specified number of days. It checks both accounts that haven't logged in
+    recently and accounts that were created but never logged in.
+    
+    The script logs all actions to the Application event log (Event IDs 9090, 9091)
+    and exports lists of affected users to CSV files for audit purposes.
+    
+    By default, the script runs in "WhatIf" mode (simulation only). Remove the -WhatIf
+    flag from the Disable-ADAccount commands to actually disable accounts.
+
+.PARAMETER None
+    Configuration is done via script variables at the top of the script.
+
+.EXAMPLE
+    .\Disable-InactiveAccountsDOM.ps1
+    Runs the script with default settings (90-day threshold).
+
+.NOTES
+    Requires Active Directory module (RSAT-AD-PowerShell).
+    Requires domain admin or delegated permissions to disable accounts.
+    Default threshold: 90 days of inactivity.
+    Excluded accounts: WDAGUtilityAccount, DefaultAccount, administrator
+    Logs to: C:\ADMIN\Inactive_Scan\ and C:\ADMIN\NeverLoggedIn_Scan\
+
+.AUTHOR
+    Jake Kelley
+    Last Modified: 11NOV2020
 #>
 
 <# Set msDS-LogonTimeSyncInterval (days) to '1'.

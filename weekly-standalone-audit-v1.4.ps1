@@ -1,10 +1,40 @@
-﻿<#
-    weekly-standalone-audit-v1.4.ps1                                                                                  
-    Version 1.4                                                                                                        
-    Last Updated by Jake Kelley 2021-08-04                                                                              
-    Parses Security Logs into html files for easy review by IA. Copies evtx & html files to backup target, if specified.
-    Event IDs were chosen to coordinate with NIST 800-53 auditing requirements
-    Right-click, Run with Powershell                                                                            
+<#
+.SYNOPSIS
+    Parses Windows Security Event Logs into HTML reports for security auditing.
+
+.DESCRIPTION
+    This script performs comprehensive security log auditing by exporting Windows
+    Security, Application, and System event logs and parsing them into formatted
+    HTML reports. It focuses on event IDs relevant to NIST 800-53 auditing
+    requirements including account management, logon events, privilege escalation,
+    and system changes.
+    
+    The script gathers additional system information including Windows Update
+    history, Symantec DAT versions, and computer information to provide context
+    for the audit data.
+    
+    Event logs are exported to EVTX format and parsed to HTML with classification
+    banners. If configured, the script can also copy audit files to a network
+    backup location.
+
+.PARAMETER None
+    Configuration is done via variables in the "User-Specified Variables" section.
+
+.EXAMPLE
+    .\weekly-standalone-audit-v1.4.ps1
+    Exports security logs and generates HTML audit report for local review.
+
+.NOTES
+    Requires Administrator privileges (will auto-elevate if needed).
+    Default output location: C:\Admin\Audits\
+    Set $AuditBackupRoot to a network path for remote backup functionality.
+    Modify classification and banner color in the "SET CLASSIFICATION" section.
+    Event IDs follow NIST 800-53 auditing requirements.
+
+.AUTHOR
+    Jake Kelley
+    Version: 1.4
+    Last Updated: 2021-08-04
 #>
 
 <#

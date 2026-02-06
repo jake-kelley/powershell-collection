@@ -1,11 +1,34 @@
-<# 
-    Bulk create local Windows users from .csv
-    
-    Example CSV layout to be passed as $userFile
-        UserName,FullName,Description,Password
-        test, Test User,Test Account,Password1
+<#
+.SYNOPSIS
+    Bulk create local Windows users from a CSV file.
 
-    Written by: Jake Kelley
+.DESCRIPTION
+    This script imports user information from a CSV file and creates local Windows user accounts.
+    The script automatically elevates to Administrator privileges if not already running elevated.
+    
+    The CSV file must contain the following columns:
+    - UserName: The login name for the user
+    - FullName: The display name for the user
+    - Description: A description for the user account
+    - Password: The initial password for the user
+
+.PARAMETER userFile
+    Path to the CSV file containing user information.
+
+.EXAMPLE
+    .\Create-LocalUsersFromCSV.ps1 -userFile "C:\users.csv"
+    Creates local users from the specified CSV file.
+
+.EXAMPLE
+    .\Create-LocalUsersFromCSV.ps1 -userFile ".\users.csv"
+    Creates local users from a CSV file in the current directory.
+
+.NOTES
+    Requires Administrator privileges (will auto-elevate if needed).
+    The CSV file must have headers: UserName, FullName, Description, Password.
+
+.AUTHOR
+    Jake Kelley
 #>
 
 ##--------------------------------------------------------------------------

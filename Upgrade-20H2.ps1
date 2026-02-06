@@ -1,5 +1,29 @@
 <#
-    Download and silently upgrade to Windows 10 20H2
+.SYNOPSIS
+    Downloads and silently upgrades Windows 10 to version 20H2.
+
+.DESCRIPTION
+    This script automates the download and silent installation of the Windows 10
+    20H2 feature update. It downloads the Windows 10 Update Assistant from
+    Microsoft's official download link, validates available disk space, and
+    executes the upgrade with silent installation parameters.
+
+.PARAMETER None
+    All configuration is done via variables at the top of the script.
+
+.EXAMPLE
+    .\Upgrade-20H2.ps1
+    Downloads and installs Windows 10 20H2 update.
+
+.NOTES
+    Requires approximately 11GB of free disk space.
+    The script checks for sufficient disk space before proceeding.
+    The upgrade process may take 30-60 minutes and will require a restart.
+    The installer is downloaded from Microsoft's official servers.
+    Cleanup removes the installer file 60 seconds after launch.
+
+.AUTHOR
+    Jake Kelley
 #>
 
 #================================================================================

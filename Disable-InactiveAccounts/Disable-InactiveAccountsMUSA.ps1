@@ -1,11 +1,32 @@
-﻿<#
-    Disable-InactiveAccountsMUSA.ps1
-    Last modified by Jake Kelley 11DEC2020
+<#
+.SYNOPSIS
+    Disables inactive local user accounts based on last logon date.
 
-    Checks for accounts inactive for longer
-    than $activityThreshold, disables       
-    respective accounts, creates event log,
-    and outputs HTML log to $htmlPath
+.DESCRIPTION
+    This script identifies and disables local Windows user accounts that have been
+    inactive for longer than the specified threshold. It checks the last logon date
+    of all local users and disables those that exceed the inactivity threshold.
+    
+    The script creates an event log source and writes event ID 9091 for each disabled
+    account. It also generates an HTML report with a list of affected users.
+
+.PARAMETER None
+    Configuration is done via script variables at the top of the script.
+
+.EXAMPLE
+    .\Disable-InactiveAccountsMUSA.ps1
+    Runs the script with default settings (90-day threshold).
+
+.NOTES
+    Requires Administrator privileges (will auto-elevate if needed).
+    Default threshold: 90 days of inactivity.
+    Excluded accounts: WDAGUtilityAccount, DefaultAccount, administrator
+    HTML report saved to: C:\Admin\InactiveUsers\
+    Creates Application event log entries with source "Disable-InactiveAccountsMUSA.ps1"
+
+.AUTHOR
+    Jake Kelley
+    Last Modified: 11DEC2020
 #>
 
 ##--------------------------------------------------------------------------
